@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872284472597",
+    "project_id": "wisedose-5b57a",
+    "storage_bucket": "wisedose-5b57a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872284472597:android:7eca7cc24e5bfba950d51c",
+        "android_client_info": {
+          "package_name": "com.example.wisedose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBV6HNjx_eUFMh13zT4kmGzFr7g74aBjbY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
