@@ -46,7 +46,19 @@ class _PatientDashboardState extends State<PatientDashboard> {
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
-              Navigator.of(context).pushNamed('/profile');
+              // Make sure your routes are properly set up in your main.dart file
+              // Ensure the profile route exists and is properly defined
+              try {
+                Navigator.of(context).pushNamed('/profile');
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile route not found'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                print('Navigation error: $e');
+              }
             },
           ),
         ],
@@ -151,37 +163,54 @@ class _PatientDashboardState extends State<PatientDashboard> {
             padding: const EdgeInsets.all(16),
             itemCount: medicines.length,
             itemBuilder: (context, index) {
-              final medicineData = medicines[index].data() as Map<String, dynamic>;
-              final medicine = Medicine(
-                id: medicines[index].id,
-                name: medicineData['name'] ?? '',
-                patientId: medicineData['patientId'] ?? '',
-                pharmacistId: medicineData['pharmacistId'] ?? '',
-                amount: (medicineData['amount'] ?? 0).toDouble(),
-                dosage: medicineData['dosage'] ?? '',
-                timing: medicineData['timing'] ?? '',
-                sideEffects: medicineData['sideEffects'] ?? '',
-                createdAt: (medicineData['createdAt'] as Timestamp).toDate(),
-                remainingDoses: medicineData['remainingDoses'] ?? 0,
-                dosageAmount: (medicineData['dosageAmount'] ?? 1.0).toDouble(),
-              );
+              // Safely handle potential null or invalid data
+              final medicineDoc = medicines[index];
+              if (medicineDoc == null) {
+                return const SizedBox.shrink();
+              }
+              
+              try {
+                final medicineData = medicineDoc.data() as Map<String, dynamic>? ?? {};
+                final medicine = Medicine(
+                  id: medicineDoc.id,
+                  name: medicineData['name'] ?? '',
+                  patientId: medicineData['patientId'] ?? '',
+                  pharmacistId: medicineData['pharmacistId'] ?? '',
+                  amount: (medicineData['amount'] ?? 0).toDouble(),
+                  dosage: medicineData['dosage'] ?? '',
+                  timing: medicineData['timing'] ?? '',
+                  sideEffects: medicineData['sideEffects'] ?? '',
+                  createdAt: medicineData['createdAt'] != null 
+                      ? (medicineData['createdAt'] as Timestamp).toDate() 
+                      : DateTime.now(),
+                  remainingDoses: medicineData['remainingDoses'] ?? 0,
+                  dosageAmount: (medicineData['dosageAmount'] ?? 1.0).toDouble(),
+                );
 
-              return MedicineCard(
-                medicine: medicine,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MedicineDetailScreen(
-                        medicine: medicine,
+                return MedicineCard(
+                  medicine: medicine,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MedicineDetailScreen(
+                          medicine: medicine,
+                        ),
                       ),
-                    ),
-                  );
-                },
-                onTakeDose: () {
-                  _takeDose(medicine);
-                },
-              );
+                    );
+                  },
+                  onTakeDose: () {
+                    _takeDose(medicine);
+                  },
+                );
+              } catch (e) {
+                print('Error processing medicine at index $index: $e');
+                return ListTile(
+                  title: Text('Error loading medicine'),
+                  subtitle: Text('$e'),
+                  tileColor: Colors.red[100],
+                );
+              }
             },
           ),
         );
@@ -190,6 +219,21 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
   
   void _takeDose(Medicine medicine) {
+    // Validate medicine data before showing dialog
+    if (medicine.dosageAmount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid dosage amount'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    // Calculate remaining doses safely
+    final currentRemaining = medicine.remainingDoses;
+    final afterTaking = (currentRemaining - medicine.dosageAmount).toDouble();
+    
     // Show confirmation dialog
     showDialog(
       context: context,
@@ -210,16 +254,16 @@ class _PatientDashboardState extends State<PatientDashboard> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Current remaining: ${medicine.remainingDoses} units',
+              'Current remaining: $currentRemaining units',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              'After taking: ${(medicine.remainingDoses - medicine.dosageAmount).toInt()} units',
+              'After taking: ${afterTaking.toInt()} units',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: (medicine.remainingDoses - medicine.dosageAmount) <= 5 
+                color: afterTaking <= 5 
                     ? Colors.red 
                     : Colors.green,
               ),
@@ -236,41 +280,50 @@ class _PatientDashboardState extends State<PatientDashboard> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _medicineService.decrementDose(medicine.id);
               
-              // Show success message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('You took ${medicine.dosage} of ${medicine.name}'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              
-              // Show low supply warning if needed
-              if ((medicine.remainingDoses - medicine.dosageAmount) <= 5 && 
-                  (medicine.remainingDoses - medicine.dosageAmount) > 0) {
+              try {
+                _medicineService.decrementDose(medicine.id);
+                
+                // Show success message
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Low supply warning: ${medicine.name} is running low!'),
-                    backgroundColor: Colors.orange,
-                    duration: const Duration(seconds: 5),
+                    content: Text('You took ${medicine.dosage} of ${medicine.name}'),
+                    backgroundColor: Colors.green,
                   ),
                 );
-              }
-              
-              // Show out of stock warning if needed
-              if ((medicine.remainingDoses - medicine.dosageAmount) <= 0) {
+                
+                // Show low supply warning if needed
+                if (afterTaking <= 5 && afterTaking > 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Low supply warning: ${medicine.name} is running low!'),
+                      backgroundColor: Colors.orange,
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
+                
+                // Show out of stock warning if needed
+                if (afterTaking <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${medicine.name} is now out of stock! Please contact your pharmacist.'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
+              } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${medicine.name} is now out of stock! Please contact your pharmacist.'),
+                    content: Text('Error taking dose: $e'),
                     backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 5),
                   ),
                 );
               }
             },
             child: const Text('Take Dose'),
-          ),
+                    ),
         ],
       ),
     );
