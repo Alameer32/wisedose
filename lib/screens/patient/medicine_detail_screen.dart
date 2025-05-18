@@ -13,6 +13,10 @@ class MedicineDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate doses remaining
+    final int dosesRemaining = (medicine.remainingDoses / medicine.dosageAmount).floor();
+    final bool isLowSupply = medicine.remainingDoses <= 5;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(medicine.name),
@@ -25,7 +29,7 @@ class MedicineDetailScreen extends StatelessWidget {
             // Flip card with medicine details
             FlipCard(
               front: _buildFrontCard(context),
-              back: _buildBackCard(context),
+              back: _buildBackCard(context, dosesRemaining),
             ),
             const SizedBox(height: 24),
             
@@ -38,8 +42,40 @@ class MedicineDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInfoRow('Dosage:', medicine.dosage),
+                  _buildInfoRow('Amount per dose:', '${medicine.dosageAmount} units'),
                   _buildInfoRow('Timing:', medicine.timing),
-                  _buildInfoRow('Remaining Doses:', '${medicine.remainingDoses}'),
+                  _buildInfoRow('Remaining Units:', '${medicine.remainingDoses}'),
+                  _buildInfoRow('Doses Left:', '$dosesRemaining'),
+                  if (isLowSupply)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.warning_amber,
+                              color: Colors.orange,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Your supply is running low. Please contact your pharmacist for a refill.',
+                                style: TextStyle(
+                                  color: Colors.orange[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -68,7 +104,7 @@ class MedicineDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInfoRow('Prescribed On:', _formatDate(medicine.createdAt)),
-                  _buildInfoRow('Amount:', '${medicine.amount} units'),
+                  _buildInfoRow('Total Amount:', '${medicine.amount} units'),
                 ],
               ),
             ),
@@ -155,7 +191,9 @@ class MedicineDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackCard(BuildContext context) {
+  Widget _buildBackCard(BuildContext context, int dosesRemaining) {
+    final bool isLowSupply = medicine.remainingDoses <= 5;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -182,8 +220,37 @@ class MedicineDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildInfoRow('Dosage:', medicine.dosage),
+          _buildInfoRow('Per dose:', '${medicine.dosageAmount} units'),
           _buildInfoRow('Timing:', medicine.timing),
-          _buildInfoRow('Remaining:', '${medicine.remainingDoses} doses'),
+          _buildInfoRow('Remaining:', '${medicine.remainingDoses} units (${dosesRemaining} doses)'),
+          const SizedBox(height: 16),
+          if (isLowSupply)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Low supply',
+                      style: TextStyle(
+                        color: Colors.orange[800],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 24),
           const Text(
             'Tap to flip back',

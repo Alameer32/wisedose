@@ -27,6 +27,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
   final _timingController = TextEditingController();
   final _sideEffectsController = TextEditingController();
   final _remainingDosesController = TextEditingController();
+  final _dosageAmountController = TextEditingController();
   
   final MedicineService _medicineService = MedicineService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -42,6 +43,9 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
     if (widget.patientId != null) {
       _selectedPatientId = widget.patientId;
     }
+    
+    // Set default value for dosage amount
+    _dosageAmountController.text = '1';
   }
 
   @override
@@ -52,6 +56,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
     _timingController.dispose();
     _sideEffectsController.dispose();
     _remainingDosesController.dispose();
+    _dosageAmountController.dispose();
     super.dispose();
   }
 
@@ -91,6 +96,9 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
     });
 
     try {
+      // Parse the dosage amount
+      double dosageAmount = double.tryParse(_dosageAmountController.text.trim()) ?? 1.0;
+      
       final medicine = Medicine(
         id: '',
         name: _nameController.text.trim(),
@@ -102,6 +110,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
         sideEffects: _sideEffectsController.text.trim(),
         createdAt: DateTime.now(),
         remainingDoses: int.parse(_remainingDosesController.text.trim()),
+        dosageAmount: dosageAmount,
       );
 
       await _medicineService.addMedicine(medicine);
@@ -220,7 +229,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
               _buildFormCard(
                 child: CustomTextField(
                   controller: _amountController,
-                  labelText: 'Amount (mg/ml)',
+                  labelText: 'Total Amount (mg/ml)',
                   prefixIcon: Icons.scale,
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -237,16 +246,37 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
               
               // Dosage
               _buildFormCard(
-                child: CustomTextField(
-                  controller: _dosageController,
-                  labelText: 'Dosage (e.g., 1 pill, 5ml)',
-                  prefixIcon: Icons.medical_information,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter dosage';
-                    }
-                    return null;
-                  },
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      controller: _dosageController,
+                      labelText: 'Dosage Description (e.g., 1 pill, 5ml)',
+                      prefixIcon: Icons.medical_information,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter dosage';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _dosageAmountController,
+                      labelText: 'Dosage Amount (units per dose)',
+                      prefixIcon: Icons.numbers,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter dosage amount';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                      // helperText: 'How many units are consumed in each dose',
+                    ),
+                  ],
                 ),
               ),
               
@@ -269,18 +299,19 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
               _buildFormCard(
                 child: CustomTextField(
                   controller: _remainingDosesController,
-                  labelText: 'Number of Doses',
-                  prefixIcon: Icons.numbers,
+                  labelText: 'Total Units Available',
+                  prefixIcon: Icons.inventory,
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter number of doses';
+                      return 'Please enter total units';
                     }
                     if (int.tryParse(value) == null) {
                       return 'Please enter a valid number';
                     }
                     return null;
                   },
+                  // helperText: 'Total number of units (not doses) available',
                 ),
               ),
               

@@ -11,6 +11,7 @@ class Medicine {
   final String sideEffects;
   final DateTime createdAt;
   final int remainingDoses;
+  final double dosageAmount; // Added field for numerical dosage amount
 
   Medicine({
     required this.id,
@@ -23,20 +24,22 @@ class Medicine {
     required this.sideEffects,
     required this.createdAt,
     required this.remainingDoses,
+    this.dosageAmount = 1.0, // Default to 1 if not specified
   });
 
   factory Medicine.fromMap(Map<String, dynamic> map, String id) {
     return Medicine(
       id: id,
-      name: map['name'],
-      patientId: map['patientId'],
-      pharmacistId: map['pharmacistId'],
-      amount: map['amount'].toDouble(),
-      dosage: map['dosage'],
-      timing: map['timing'],
-      sideEffects: map['sideEffects'],
+      name: map['name'] ?? '',
+      patientId: map['patientId'] ?? '',
+      pharmacistId: map['pharmacistId'] ?? '',
+      amount: (map['amount'] ?? 0).toDouble(),
+      dosage: map['dosage'] ?? '',
+      timing: map['timing'] ?? '',
+      sideEffects: map['sideEffects'] ?? '',
       createdAt: (map['createdAt'] as Timestamp).toDate(),
-      remainingDoses: map['remainingDoses'],
+      remainingDoses: map['remainingDoses'] ?? 0,
+      dosageAmount: (map['dosageAmount'] ?? 1.0).toDouble(),
     );
   }
 
@@ -51,6 +54,7 @@ class Medicine {
       'sideEffects': sideEffects,
       'createdAt': Timestamp.fromDate(createdAt),
       'remainingDoses': remainingDoses,
+      'dosageAmount': dosageAmount,
     };
   }
 
@@ -65,6 +69,7 @@ class Medicine {
     String? sideEffects,
     DateTime? createdAt,
     int? remainingDoses,
+    double? dosageAmount,
   }) {
     return Medicine(
       id: id ?? this.id,
@@ -77,6 +82,7 @@ class Medicine {
       sideEffects: sideEffects ?? this.sideEffects,
       createdAt: createdAt ?? this.createdAt,
       remainingDoses: remainingDoses ?? this.remainingDoses,
+      dosageAmount: dosageAmount ?? this.dosageAmount,
     );
   }
 }
@@ -85,7 +91,14 @@ class MedicineService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addMedicine(Medicine medicine) async {
-    await _firestore.collection('medicines').add(medicine.toMap());
+    // Extract dosage amount from the dosage string if possible
+    double dosageAmount = _extractDosageAmount(medicine.dosage);
+    
+    // Create a new map with the extracted dosage amount
+    final medicineMap = medicine.toMap();
+    medicineMap['dosageAmount'] = dosageAmount;
+    
+    await _firestore.collection('medicines').add(medicineMap);
   }
 
   Future<void> updateMedicine(Medicine medicine) async {
@@ -123,15 +136,46 @@ class MedicineService {
     });
   }
 
+  // Updated to take dosage into account
   Future<void> decrementDose(String medicineId) async {
-    final doc = await _firestore.collection('medicines').doc(medicineId).get();
-    if (doc.exists) {
-      final medicine = Medicine.fromMap(doc.data()!, doc.id);
-      if (medicine.remainingDoses > 0) {
-        await _firestore.collection('medicines').doc(medicineId).update({
-          'remainingDoses': medicine.remainingDoses - 1,
-        });
+    try {
+      final doc = await _firestore.collection('medicines').doc(medicineId).get();
+      if (doc.exists) {
+        final medicine = Medicine.fromMap(doc.data()!, doc.id);
+        
+        // Get the dosage amount (how much is taken per dose)
+        double dosageAmount = medicine.dosageAmount;
+        
+        // Calculate new remaining doses
+        int newRemainingDoses = medicine.remainingDoses;
+        if (newRemainingDoses >= dosageAmount) {
+          newRemainingDoses = (newRemainingDoses - dosageAmount).toInt();
+          
+          // Ensure we don't go below zero
+          if (newRemainingDoses < 0) newRemainingDoses = 0;
+          
+          await _firestore.collection('medicines').doc(medicineId).update({
+            'remainingDoses': newRemainingDoses,
+          });
+        }
       }
+    } catch (e) {
+      print('Error decrementing dose: $e');
     }
+  }
+  
+  // Helper method to extract dosage amount from dosage string
+  double _extractDosageAmount(String dosage) {
+    try {
+      // Try to extract a number from the dosage string
+      RegExp regExp = RegExp(r'(\d+(\.\d+)?)');
+      var match = regExp.firstMatch(dosage);
+      if (match != null) {
+        return double.parse(match.group(1)!);
+      }
+    } catch (e) {
+      print('Error extracting dosage amount: $e');
+    }
+    return 1.0; // Default to 1 if we can't extract a number
   }
 }

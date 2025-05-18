@@ -20,6 +20,7 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   int _selectedIndex = 0;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final MedicineService _medicineService = MedicineService();
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +163,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 sideEffects: medicineData['sideEffects'] ?? '',
                 createdAt: (medicineData['createdAt'] as Timestamp).toDate(),
                 remainingDoses: medicineData['remainingDoses'] ?? 0,
+                dosageAmount: (medicineData['dosageAmount'] ?? 1.0).toDouble(),
               );
 
               return MedicineCard(
@@ -176,11 +178,101 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     ),
                   );
                 },
+                onTakeDose: () {
+                  _takeDose(medicine);
+                },
               );
             },
           ),
         );
       },
+    );
+  }
+  
+  void _takeDose(Medicine medicine) {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Take Medication'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to take ${medicine.dosage} of ${medicine.name}?'),
+            const SizedBox(height: 16),
+            Text(
+              'This will reduce your remaining supply by ${medicine.dosageAmount} units.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Current remaining: ${medicine.remainingDoses} units',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'After taking: ${(medicine.remainingDoses - medicine.dosageAmount).toInt()} units',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: (medicine.remainingDoses - medicine.dosageAmount) <= 5 
+                    ? Colors.red 
+                    : Colors.green,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _medicineService.decrementDose(medicine.id);
+              
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('You took ${medicine.dosage} of ${medicine.name}'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              
+              // Show low supply warning if needed
+              if ((medicine.remainingDoses - medicine.dosageAmount) <= 5 && 
+                  (medicine.remainingDoses - medicine.dosageAmount) > 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Low supply warning: ${medicine.name} is running low!'),
+                    backgroundColor: Colors.orange,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
+              
+              // Show out of stock warning if needed
+              if ((medicine.remainingDoses - medicine.dosageAmount) <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${medicine.name} is now out of stock! Please contact your pharmacist.'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
+            },
+            child: const Text('Take Dose'),
+          ),
+        ],
+      ),
     );
   }
 }
