@@ -23,10 +23,9 @@ class UserModel {
       if (roleValue == null) return UserRole.patient;
       
       final String roleStr = roleValue.toString().toLowerCase();
-      print("Parsing role: $roleStr");
       
-      if (roleStr.contains('admin')) return UserRole.admin;
-      if (roleStr.contains('pharmacist')) return UserRole.pharmacist;
+      if (roleStr == 'admin') return UserRole.admin;
+      if (roleStr == 'pharmacist') return UserRole.pharmacist;
       return UserRole.patient;
     }
     

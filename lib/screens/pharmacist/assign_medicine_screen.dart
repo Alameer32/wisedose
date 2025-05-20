@@ -10,10 +10,10 @@ class AssignMedicineScreen extends StatefulWidget {
   final String? patientId;
 
   const AssignMedicineScreen({
-    Key? key,
+    super.key,
     required this.pharmacistId,
     this.patientId,
-  }) : super(key: key);
+  });
 
   @override
   State<AssignMedicineScreen> createState() => _AssignMedicineScreenState();
@@ -167,7 +167,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
                       value: _selectedPatientId,
                       decoration: InputDecoration(
                         labelText: 'Patient',
-                        labelStyle: TextStyle(
+                        labelStyle: const TextStyle(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
@@ -180,7 +180,7 @@ class _AssignMedicineScreenState extends State<AssignMedicineScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+                          borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
                         ),
                         prefixIcon: const Icon(Icons.person),
                       ),

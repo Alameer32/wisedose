@@ -4,7 +4,7 @@ import 'package:wisedose/services/auth_service.dart';
 import 'package:wisedose/utils/app_theme.dart';
 
 class UserManagementScreen extends StatefulWidget {
-  const UserManagementScreen({Key? key}) : super(key: key);
+  const UserManagementScreen({super.key});
 
   @override
   State<UserManagementScreen> createState() => _UserManagementScreenState();
@@ -433,7 +433,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   UserRole _stringToUserRole(String role) {
-    switch (role) {
+    switch (role.toLowerCase()) {
       case 'admin':
         return UserRole.admin;
       case 'pharmacist':

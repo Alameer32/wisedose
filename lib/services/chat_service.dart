@@ -79,19 +79,24 @@ class ChatService {
 
   Stream<List<ChatMessage>> getMessages(String userId1, String userId2) {
     try {
-      // Get messages where either user is sender and the other is receiver
+      // Create a composite query that works with Firestore
       return _firestore
           .collection('chats')
-          .where('senderId', whereIn: [userId1, userId2])
-          .where('receiverId', whereIn: [userId1, userId2])
+          .where(Filter.or(
+            Filter.and(
+              Filter('senderId', isEqualTo: userId1),
+              Filter('receiverId', isEqualTo: userId2),
+            ),
+            Filter.and(
+              Filter('senderId', isEqualTo: userId2),
+              Filter('receiverId', isEqualTo: userId1),
+            ),
+          ))
           .orderBy('timestamp', descending: true)
           .snapshots()
           .map((snapshot) {
         return snapshot.docs
             .map((doc) => ChatMessage.fromMap(doc.data(), doc.id))
-            .where((message) => 
-                (message.senderId == userId1 && message.receiverId == userId2) ||
-                (message.senderId == userId2 && message.receiverId == userId1))
             .toList();
       });
     } catch (e) {

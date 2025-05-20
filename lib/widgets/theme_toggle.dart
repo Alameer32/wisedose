@@ -6,10 +6,10 @@ class ThemeToggle extends StatelessWidget {
   final VoidCallback onToggle;
 
   const ThemeToggle({
-    Key? key,
+    super.key,
     required this.isDarkMode,
     required this.onToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

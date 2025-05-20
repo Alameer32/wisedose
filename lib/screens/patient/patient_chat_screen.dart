@@ -7,9 +7,9 @@ class PatientChatScreen extends StatefulWidget {
   final String patientId;
 
   const PatientChatScreen({
-    Key? key,
+    super.key,
     required this.patientId,
-  }) : super(key: key);
+  });
 
   @override
   State<PatientChatScreen> createState() => _PatientChatScreenState();
@@ -19,61 +19,36 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
   final ChatService _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<String> pharmacists = [];
   String? selectedPharmacistId;
   String? selectedPharmacistName;
-  bool _isLoading = true;
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadPharmacists();
+    _loadPharmacist();
   }
 
-  Future<void> _loadPharmacists() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadPharmacist() async {
+    // Find the pharmacist associated with this patient
+    // This could be done by looking at the medicines assigned to the patient
+    // or by having a direct relationship in the database
     
-    try {
-      final querySnapshot = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'pharmacist')
-          .get();
+    final medicineSnapshot = await _firestore
+        .collection('medicines')
+        .where('patientId', isEqualTo: widget.patientId)
+        .limit(1)
+        .get();
+    
+    if (medicineSnapshot.docs.isNotEmpty) {
+      final pharmacistId = medicineSnapshot.docs.first['pharmacistId'] as String?;
       
-      final pharmacistsList = querySnapshot.docs.map((doc) => doc.id).toList();
-      
-      setState(() {
-        pharmacists = pharmacistsList;
-        _isLoading = false;
-        
-        if (pharmacists.isNotEmpty) {
-          _selectPharmacist(pharmacists.first);
-        } else {
-          _errorMessage = 'No pharmacists available';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to load pharmacists: $e';
-      });
-    }
-  }
-
-  Future<void> _selectPharmacist(String pharmacistId) async {
-    try {
-      final doc = await _firestore.collection('users').doc(pharmacistId).get();
-      setState(() {
-        selectedPharmacistId = pharmacistId;
-        selectedPharmacistName = doc.data()?['name'] ?? 'Pharmacist';
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to select pharmacist: $e';
-      });
+      if (pharmacistId != null) {
+        final pharmacistDoc = await _firestore.collection('users').doc(pharmacistId).get();
+        setState(() {
+          selectedPharmacistId = pharmacistId;
+          selectedPharmacistName = pharmacistDoc.data()?['name'] ?? 'Pharmacist';
+        });
+      }
     }
   }
 
@@ -93,113 +68,78 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadPharmacists,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (pharmacists.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.people_outline,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No Pharmacists Available',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'There are no pharmacists available to chat with at the moment.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Column(
       children: [
-        // Pharmacist selector
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: DropdownButtonFormField<String>(
-            value: selectedPharmacistId,
-            decoration: InputDecoration(
-              labelText: 'Select Pharmacist',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            items: pharmacists.map((pharmacistId) {
-              return DropdownMenuItem<String>(
-                value: pharmacistId,
-                child: FutureBuilder<DocumentSnapshot>(
-                  future: _firestore.collection('users').doc(pharmacistId).get(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Text('Loading...');
-                    }
-                    final name = snapshot.data?.get('name') ?? 'Pharmacist';
-                    return Text(name);
-                  },
+        // Pharmacist info banner
+        if (selectedPharmacistId != null) ...[
+          Container(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkCardColor
+                : Colors.grey[100],
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppTheme.primaryColor,
+                  child: Text(
+                    selectedPharmacistName?.substring(0, 1).toUpperCase() ?? 'P',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                _selectPharmacist(value);
-              }
-            },
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedPharmacistName ?? 'Pharmacist',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Text(
+                        'Your pharmacist',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
 
         // Chat messages
         Expanded(
           child: selectedPharmacistId == null
-              ? const Center(
-                  child: Text('Select a pharmacist to start chatting'),
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.medical_services_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No pharmacist found',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'You don\'t have any medications yet',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
                 )
               : FutureBuilder<bool>(
                   future: _chatService.createChatIndex(),

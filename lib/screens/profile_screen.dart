@@ -5,7 +5,7 @@ import 'package:wisedose/utils/app_theme.dart';
 import 'package:wisedose/widgets/custom_button.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +19,11 @@ class ProfileScreen extends StatelessWidget {
       );
     }
 
+    // Safely get the first letter of the name or use a default
+    final String avatarText = (authService.userModel!.name.isNotEmpty) 
+        ? authService.userModel!.name.substring(0, 1).toUpperCase()
+        : "U"; // 'U' for User as default
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -30,12 +35,12 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 24),
             
-            // Profile avatar
+            // Profile avatar - now with safely handled text
             CircleAvatar(
               radius: 60,
               backgroundColor: AppTheme.primaryColor,
               child: Text(
-                authService.userModel!.name.substring(0, 1).toUpperCase(),
+                avatarText,
                 style: const TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
@@ -45,9 +50,11 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // User name
+            // User name - displayed safely even if empty
             Text(
-              authService.userModel!.name,
+              authService.userModel!.name.isNotEmpty 
+                  ? authService.userModel!.name 
+                  : "User",
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -198,6 +205,8 @@ class ProfileScreen extends StatelessWidget {
         return Colors.blue;
       case UserRole.patient:
         return AppTheme.primaryColor;
+      default:
+        return AppTheme.primaryColor;
     }
   }
 
@@ -208,6 +217,8 @@ class ProfileScreen extends StatelessWidget {
       case UserRole.pharmacist:
         return 'Pharmacist';
       case UserRole.patient:
+        return 'Patient';
+      default:
         return 'Patient';
     }
   }

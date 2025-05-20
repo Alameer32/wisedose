@@ -13,8 +13,7 @@ import 'package:wisedose/screens/pharmacist/pharmacist_dashboard.dart';
 import 'package:wisedose/screens/admin/admin_dashboard.dart';
 import 'package:wisedose/screens/profile_screen.dart';
 import 'package:wisedose/utils/app_theme.dart';
-// Import the test user creator
-import 'package:wisedose/utils/create_test_users.dart';
+
 
 void main() async {
   // Ensure Flutter is initialized
@@ -62,7 +61,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

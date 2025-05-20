@@ -7,9 +7,9 @@ class PharmacistChatScreen extends StatefulWidget {
   final String pharmacistId;
 
   const PharmacistChatScreen({
-    Key? key,
+    super.key,
     required this.pharmacistId,
-  }) : super(key: key);
+  });
 
   @override
   State<PharmacistChatScreen> createState() => _PharmacistChatScreenState();

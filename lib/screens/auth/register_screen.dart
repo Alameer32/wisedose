@@ -6,7 +6,7 @@ import 'package:wisedose/widgets/custom_button.dart';
 import 'package:wisedose/widgets/custom_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -83,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo
-                  Icon(
+                  const Icon(
                     Icons.medication_rounded,
                     size: 80,
                     color: AppTheme.primaryColor,
@@ -91,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   
                   // App name
-                  Text(
+                  const Text(
                     'WiseDose',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -119,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 24),

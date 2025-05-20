@@ -8,9 +8,9 @@ class PatientListScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   PatientListScreen({
-    Key? key,
+    super.key,
     required this.pharmacistId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

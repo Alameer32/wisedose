@@ -11,7 +11,7 @@ import 'package:wisedose/widgets/medicine_card.dart';
 import 'package:wisedose/widgets/theme_toggle.dart';
 
 class PatientDashboard extends StatefulWidget {
-  const PatientDashboard({Key? key}) : super(key: key);
+  const PatientDashboard({super.key});
 
   @override
   State<PatientDashboard> createState() => _PatientDashboardState();
@@ -165,9 +165,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
             itemBuilder: (context, index) {
               // Safely handle potential null or invalid data
               final medicineDoc = medicines[index];
-              if (medicineDoc == null) {
-                return const SizedBox.shrink();
-              }
               
               try {
                 final medicineData = medicineDoc.data() as Map<String, dynamic>? ?? {};
@@ -206,7 +203,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
               } catch (e) {
                 print('Error processing medicine at index $index: $e');
                 return ListTile(
-                  title: Text('Error loading medicine'),
+                  title: const Text('Error loading medicine'),
                   subtitle: Text('$e'),
                   tileColor: Colors.red[100],
                 );

@@ -9,12 +9,12 @@ class MedicineCard extends StatelessWidget {
   final VoidCallback? onTakeDose;
 
   const MedicineCard({
-    Key? key,
+    super.key,
     required this.medicine,
     required this.onTap,
     this.onSetReminder,
     this.onTakeDose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class MedicineCard extends StatelessWidget {
                       color: AppTheme.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.medication,
                       color: AppTheme.primaryColor,
                       size: 24,

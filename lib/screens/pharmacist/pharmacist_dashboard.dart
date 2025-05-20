@@ -8,7 +8,7 @@ import 'package:wisedose/screens/pharmacist/patient_list_screen.dart';
 import 'package:wisedose/widgets/theme_toggle.dart';
 
 class PharmacistDashboard extends StatefulWidget {
-  const PharmacistDashboard({Key? key}) : super(key: key);
+  const PharmacistDashboard({super.key});
 
   @override
   State<PharmacistDashboard> createState() => _PharmacistDashboardState();

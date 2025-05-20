@@ -7,9 +7,9 @@ class MedicineDetailScreen extends StatelessWidget {
   final Medicine medicine;
 
   const MedicineDetailScreen({
-    Key? key,
+    super.key,
     required this.medicine,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +147,7 @@ class MedicineDetailScreen extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.medication,
                   size: 32,
                   color: AppTheme.primaryColor,
@@ -222,7 +222,7 @@ class MedicineDetailScreen extends StatelessWidget {
           _buildInfoRow('Dosage:', medicine.dosage),
           _buildInfoRow('Per dose:', '${medicine.dosageAmount} units'),
           _buildInfoRow('Timing:', medicine.timing),
-          _buildInfoRow('Remaining:', '${medicine.remainingDoses} units (${dosesRemaining} doses)'),
+          _buildInfoRow('Remaining:', '${medicine.remainingDoses} units ($dosesRemaining doses)'),
           const SizedBox(height: 16),
           if (isLowSupply)
             Container(

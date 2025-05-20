@@ -4,7 +4,7 @@ import 'package:wisedose/services/auth_service.dart';
 import 'package:wisedose/utils/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -99,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -125,7 +125,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width: 100,
                   height: 100,
                   errorBuilder: (context, error, stackTrace) {
-                    return Icon(
+                    return const Icon(
                       Icons.medication_rounded,
                       size: 80,
                       color: AppTheme.primaryColor,
@@ -137,7 +137,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 24),
             
             // App name
-            Text(
+            const Text(
               'WiseDose',
               style: TextStyle(
                 fontSize: 32,
@@ -160,7 +160,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 48),
             
             // Loading indicator
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
             ),
           ],
