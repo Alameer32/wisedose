@@ -81,6 +81,10 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: _getRoleColor(authService.userModel!.role).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _getRoleColor(authService.userModel!.role),
+                  width: 1,
+                ),
               ),
               child: Text(
                 _getRoleName(authService.userModel!.role),
@@ -205,6 +209,7 @@ class ProfileScreen extends StatelessWidget {
         return Colors.blue;
       case UserRole.patient:
         return AppTheme.primaryColor;
+      // ignore: unreachable_switch_default
       default:
         return AppTheme.primaryColor;
     }
@@ -218,6 +223,7 @@ class ProfileScreen extends StatelessWidget {
         return 'Pharmacist';
       case UserRole.patient:
         return 'Patient';
+      // ignore: unreachable_switch_default
       default:
         return 'Patient';
     }

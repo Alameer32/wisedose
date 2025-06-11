@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wisedose/services/auth_service.dart';
 import 'package:wisedose/services/theme_service.dart';
+import 'package:wisedose/services/admin_service.dart';
 import 'package:wisedose/screens/admin/user_management_screen.dart';
 import 'package:wisedose/widgets/theme_toggle.dart';
 
@@ -14,6 +15,7 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   int _selectedIndex = 0;
+  final AdminService _adminService = AdminService();
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +106,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               Expanded(
                 child: _buildStatCard(
                   title: 'Total Users',
-                  value: '0',
+                  stream: _adminService.getTotalUsersCount(),
                   icon: Icons.people,
                   color: Colors.blue,
                 ),
@@ -113,7 +115,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               Expanded(
                 child: _buildStatCard(
                   title: 'Patients',
-                  value: '0',
+                  stream: _adminService.getPatientsCount(),
                   icon: Icons.person,
                   color: Colors.green,
                 ),
@@ -126,7 +128,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               Expanded(
                 child: _buildStatCard(
                   title: 'Pharmacists',
-                  value: '0',
+                  stream: _adminService.getPharmacistsCount(),
                   icon: Icons.medical_services,
                   color: Colors.orange,
                 ),
@@ -135,7 +137,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               Expanded(
                 child: _buildStatCard(
                   title: 'Medications',
-                  value: '0',
+                  stream: _adminService.getMedicationsCount(),
                   icon: Icons.medication,
                   color: Colors.purple,
                 ),
@@ -181,7 +183,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget _buildStatCard({
     required String title,
-    required String value,
+    required Stream<int> stream,
     required IconData icon,
     required Color color,
   }) {
@@ -219,13 +221,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+          StreamBuilder<int>(
+            stream: stream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+              
+              if (snapshot.hasError) {
+                return Text(
+                  'Error',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                );
+              }
+              
+              return Text(
+                snapshot.data?.toString() ?? '0',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              );
+            },
           ),
         ],
       ),

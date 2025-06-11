@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, unreachable_switch_default
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wisedose/services/auth_service.dart';

@@ -21,7 +21,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         // Filter options
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'Filter by role:',
@@ -29,53 +30,56 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 16),
-              ChoiceChip(
-                label: const Text('All'),
-                selected: _selectedFilter == 'All',
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedFilter = 'All';
-                    });
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              ChoiceChip(
-                label: const Text('Patients'),
-                selected: _selectedFilter == 'patient',
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedFilter = 'patient';
-                    });
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              ChoiceChip(
-                label: const Text('Pharmacists'),
-                selected: _selectedFilter == 'pharmacist',
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedFilter = 'pharmacist';
-                    });
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              ChoiceChip(
-                label: const Text('Admins'),
-                selected: _selectedFilter == 'admin',
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedFilter = 'admin';
-                    });
-                  }
-                },
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('All'),
+                    selected: _selectedFilter == 'All',
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedFilter = 'All';
+                        });
+                      }
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Patients'),
+                    selected: _selectedFilter == 'patient',
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedFilter = 'patient';
+                        });
+                      }
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Pharmacists'),
+                    selected: _selectedFilter == 'pharmacist',
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedFilter = 'pharmacist';
+                        });
+                      }
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Admins'),
+                    selected: _selectedFilter == 'admin',
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedFilter = 'admin';
+                        });
+                      }
+                    },
+                  ),
+                ],
               ),
             ],
           ),
