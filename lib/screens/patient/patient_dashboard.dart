@@ -6,6 +6,7 @@ import 'package:wisedose/services/medicine_service.dart';
 import 'package:wisedose/services/theme_service.dart';
 import 'package:wisedose/screens/patient/medicine_detail_screen.dart';
 import 'package:wisedose/screens/patient/patient_chat_screen.dart';
+import 'package:wisedose/screens/patient/pharmacy_locator_screen.dart';
 import 'package:wisedose/utils/app_theme.dart';
 import 'package:wisedose/widgets/medicine_card.dart';
 import 'package:wisedose/widgets/theme_toggle.dart';
@@ -87,6 +88,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
             icon: Icon(Icons.chat),
             label: 'Chat',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_pharmacy),
+            label: 'Pharmacies',
+          ),
         ],
       ),
     );
@@ -98,6 +103,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
         return _buildMedicinesList(authService);
       case 1:
         return PatientChatScreen(patientId: authService.userModel!.uid);
+      case 2:
+        return _buildNearestPharmacy();
       default:
         return _buildMedicinesList(authService);
     }
@@ -324,5 +331,9 @@ class _PatientDashboardState extends State<PatientDashboard> {
         ],
       ),
     );
+  }
+
+  Widget _buildNearestPharmacy() {
+    return const PharmacyLocatorScreen();
   }
 }
